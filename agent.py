@@ -27,7 +27,7 @@ if not creds or not creds.valid:
 service = build("gmail", "v1", credentials=creds)
 
 
-def list_unread(limit=5): # you can change the limit to get more or less emails
+def list_unread(limit=5):  # you can change the limit to get more or less emails
     # find unread messages
     res = (
         service.users()
@@ -56,7 +56,18 @@ def fetch_message(msg_id):
 
 
 def draft_reply(subject, sender, body):
-    system_prompt = (os.getenv("SYSTEM_PROMPT"))
+    system_prompt = (
+        "You are an executive assistant for a early 20s professional in tech. "
+        "Your primary responsibilities are: "
+        "1. Quickly determine if an email requires a response "
+        "2. If a response is needed, draft a concise, professional reply "
+        "3. Maintain a friendly but efficient tone "
+        "4. Never use emojis or informal language "
+        "5. Always sign off with 'Best, \nRahul'"
+        "If the email is a LinkedIn message or InMail, you should not reply to it."
+        "\nIMPORTANT: Return ONLY a JSON object with two keys: needs_reply (boolean) and reply_draft (string). "
+        "Do not include any other text or formatting."
+    )
     user_prompt = f"Here is the email I receive. You will sign off on all emails that need a reply with Best, Rahul. From: {sender}\nSubject: {subject}\n\n{body}"
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
@@ -67,8 +78,20 @@ def draft_reply(subject, sender, body):
         temperature=0.2,
     )
     try:
-        return json.loads(response.choices[0].message.content.strip())
+        # First try to parse the response as JSON
+        result = json.loads(response.choices[0].message.content.strip())
+        # If the reply_draft is itself a JSON string, parse it
+        if isinstance(result.get("reply_draft"), str) and result[
+            "reply_draft"
+        ].startswith("{"):
+            try:
+                nested_result = json.loads(result["reply_draft"])
+                return nested_result
+            except:
+                pass
+        return result
     except:
+        # If parsing fails, return a default response
         return {
             "needs_reply": True,
             "reply_draft": response.choices[0].message.content.strip(),
@@ -82,7 +105,10 @@ def create_draft(to_addr, reply_text, thread_id):
     raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
     body = {"message": {"raw": raw, "threadId": thread_id}}
     service.users().drafts().create(userId="me", body=body).execute()
-    print(body)
+    encoded_message = body["message"]["raw"]
+    decoded_bytes = base64.urlsafe_b64decode(encoded_message)
+    decoded_string = decoded_bytes.decode("utf-8")
+    print(decoded_string)
 
 
 def mark_read(msg_id):
@@ -100,6 +126,7 @@ def agent_loop():
         subj, frm, body = fetch_message(msg_id)
         print(f"📨 {subj}")
         reply_data = draft_reply(subj, frm, body)
+        print(reply_data)
         if reply_data.get("needs_reply"):
             create_draft(frm, reply_data["reply_draft"], msg_id)
             print("💾 Draft created.")
