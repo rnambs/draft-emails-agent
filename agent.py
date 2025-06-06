@@ -56,11 +56,7 @@ def fetch_message(msg_id):
 
 
 def draft_reply(subject, sender, body):
-    system_prompt = (
-        "You are an executive assistant for a early 20s professional managing their personal inbox. Your goal is to decide if an email needs a reply, and if it does, draft the reply message. "
-        "You must return JSON with keys: needs_reply (true/false) and reply_draft (string)."
-        "Your tone will be friendly, professional, concise and to the point. You will never use emojis."
-    )
+    system_prompt = (os.getenv("SYSTEM_PROMPT"))
     user_prompt = f"Here is the email I receive. You will sign off on all emails that need a reply with Best, Rahul. From: {sender}\nSubject: {subject}\n\n{body}"
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
