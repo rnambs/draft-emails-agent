@@ -67,8 +67,3 @@ system_prompt = (
 ```python
 q="is:unread -category:promotions -category:social -category:updates"
 ```
-
-## Security
-
-- Never commit `.env`, `credentials.json`, or `token.json`
-- Keep your API keys secure
