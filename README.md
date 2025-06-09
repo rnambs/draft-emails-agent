@@ -2,6 +2,8 @@
 
 This script connects to your Google Account, and uses AI to figure out which of your unread emails need a response and drafts them for you.
 
+UPDATE: New feature that unmarks spam emails as spam and moves to important. Useful if you have a forwarding address to your main email inbox that gets caught in spam.
+
 ## Prerequisites
 
 1. **Google Cloud Setup**
