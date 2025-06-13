@@ -1,3 +1,13 @@
+NEW: Branch modal allows you to run this constantly via Modal. Modal's free tier should cover it.
+This uses Google Cal events to know when to set meetings for you as well!
+Steps are as follows:
+1. Clone the 'modal' branch - you only need auth.py and modal_email_agent.py
+2. Make sure you create a modal[www.modal.com] account and app:
+3. I am assuming you already have a Google Cloud App with API access to Mail and Calendar
+4. After this is done, run `python auth.py`. This will create a `refresh_token.json` file. Create a secret on modal called GOOGLE_REFRESH_TOKEN and paste the contents of that file into it.
+5. Set your OPENAI_API_KEY on modal secrets
+6. Make sure you `pip install modal` and finally run `modal deploy {whatever_you_set_the_app_name}`
+
 # Email Draft Agent
 
 This script connects to your Google Account, and uses AI to figure out which of your unread emails need a response and drafts them for you.
